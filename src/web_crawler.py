@@ -17,6 +17,7 @@ def web_content(url):
         html = zlib.decompress(html, 16+zlib.MAX_WBITS)
     content = BeautifulSoup(html)
     [s.extract() for s in content('script')]
+    [s.extract() for s in content('style')]
     original = content.get_text().split('\n')
     filtered = filter(lambda x:  not re.match(r'^\s*$', x), original)
     #get urls
@@ -72,8 +73,9 @@ def output_index():
 if __name__=="__main__":
     #reload(sys)
     #sys.setdefaultencoding('utf-8')
-    #urls, content = web_content("http://www.github.com")
-    parse_web("http://www.sina.com.cn",0)
+    urls, content = web_content("http://www.sina.com.cn")
+    print content.encode('utf-8')
+    #parse_web("http://www.sina.com.cn",0)
     #print web_name("http://news.sina.com.cn")
     output_index()
     findex.close()
