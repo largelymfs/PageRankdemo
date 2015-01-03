@@ -5,7 +5,7 @@ from urlparse import urlparse
 id = 0
 findex = open("../data/index.txt","w")
 datas = {}
-
+status = {}
 def web_content(url):
     request = urllib2.Request(url)
     request.add_header('Accept-encoding', 'gzip')
@@ -34,6 +34,10 @@ def web_name(url):
     return s.netloc
 
 def parse_web(url, deeps):
+    global status
+    if url in status:
+        return web_name(url)
+    status[url]=True
     if deeps==3:
         return web_name(url)
     print "parsing ",url,"......",
@@ -51,6 +55,7 @@ def parse_web(url, deeps):
     tmp_id = id
     id += 1
     web_urls = web_urls[:100]
+    datas[id - 1]['urls'] = [web_name(web_url) for web_url in web_urls]
     for sub_url in web_urls:
         try:
             sub_webroot = parse_web(sub_url, deeps + 1)
@@ -58,24 +63,27 @@ def parse_web(url, deeps):
             continue
         if sub_webroot is None:
             continue
-        datas[tmp_id]["urls"].append(sub_webroot)
     return web_root
 
 def output_index():
-    print datas
     for (k, v) in datas.items():
         print >>findex, k, v["website"], v['root'],
         for v1 in v['urls']:
-            print >>findex, v1,
+            try:
+                print >>findex, v1.encode('utf-8'),
+            except:
+                print "ERROR"
         print >>findex
 
 
 if __name__=="__main__":
     #reload(sys)
     #sys.setdefaultencoding('utf-8')
-    urls, content = web_content("http://www.sina.com.cn")
-    print content.encode('utf-8')
-    #parse_web("http://www.sina.com.cn",0)
+    #urls, content = web_content("http://www.sina.com.cn")
+    with open("seed1") as fin:
+        seeds = [l.strip() for l in fin]
+    for root in seeds:
+        parse_web(root,0)
     #print web_name("http://news.sina.com.cn")
     output_index()
     findex.close()
